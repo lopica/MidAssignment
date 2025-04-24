@@ -13,8 +13,7 @@ namespace MidAssignment.Services
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:PrivateKey"]!));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            //List<Claim> claims = [new Claim("PublicKey", publicKey)];
-            List<Claim> claims = [];
+            List<Claim> claims = new List<Claim>();
             if (!isRefreshToken)
             {
                 claims.Add(new Claim(ClaimTypes.Email, email));
@@ -23,7 +22,9 @@ namespace MidAssignment.Services
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
+                expires: isRefreshToken
+                    ? DateTime.UtcNow.AddDays(double.Parse(_configuration["JwtSettings:RefreshTokenExpirationDays"]!))
+                    : DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:AccessTokenExpirationMinutes"]!)),
                 signingCredentials: credentials
             );
 

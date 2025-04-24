@@ -19,6 +19,7 @@ namespace MidAssignment
             string jwtKey = builder.Configuration["JwtSettings:PrivateKey"]!;
             int accessTokenExpiry = int.Parse(builder.Configuration["JwtSettings:AccessTokenExpirationMinutes"]!);
             int refreshTokenExpiry = int.Parse(builder.Configuration["JwtSettings:RefreshTokenExpirationDays"]!);
+            string domainFrontend = builder.Configuration["JwtSettings:DomainFrontend"]!;
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -33,7 +34,7 @@ namespace MidAssignment
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.WithOrigins("https://localhost:3000") 
+                    policy.WithOrigins(domainFrontend) 
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials(); 
