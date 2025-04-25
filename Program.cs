@@ -19,7 +19,7 @@ namespace MidAssignment
             string jwtKey = builder.Configuration["JwtSettings:PrivateKey"]!;
             int accessTokenExpiry = int.Parse(builder.Configuration["JwtSettings:AccessTokenExpirationMinutes"]!);
             int refreshTokenExpiry = int.Parse(builder.Configuration["JwtSettings:RefreshTokenExpirationDays"]!);
-            string domainFrontend = builder.Configuration["JwtSettings:DomainFrontend"]!;
+            string domainFrontend = builder.Configuration["DomainFrontend"]!;
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();

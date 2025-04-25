@@ -12,8 +12,8 @@ using MidAssignment.Infrastructure;
 namespace MidAssignment.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250424050736_RemoveRole")]
-    partial class RemoveRole
+    [Migration("20250425115248_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,36 @@ namespace MidAssignment.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("BookBorrowingRequestDetailBook", b =>
+                {
+                    b.Property<Guid>("BookId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BookBorrowingRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("BookId", "BookBorrowingRequestId");
+
+                    b.HasIndex("BookBorrowingRequestId");
+
+                    b.ToTable("BookBorrowingRequestDetailBook", (string)null);
+                });
+
+            modelBuilder.Entity("BookCategory", b =>
+                {
+                    b.Property<Guid>("BookId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("BookId", "CategoryId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("BookCategory", (string)null);
+                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -226,6 +256,118 @@ namespace MidAssignment.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("MidAssignment.Domain.Book", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Books");
+                });
+
+            modelBuilder.Entity("MidAssignment.Domain.BookBorrowingRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ApproverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RequestorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApproverId");
+
+                    b.HasIndex("RequestorId");
+
+                    b.ToTable("BookBorrowingRequests");
+                });
+
+            modelBuilder.Entity("MidAssignment.Domain.BookBorrowingRequestDetail", b =>
+                {
+                    b.Property<Guid>("BookBorrowingRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ReturnDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdateAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("BookBorrowingRequestId");
+
+                    b.ToTable("BookBorrowingRequestDetails");
+                });
+
+            modelBuilder.Entity("MidAssignment.Domain.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("BookBorrowingRequestDetailBook", b =>
+                {
+                    b.HasOne("MidAssignment.Domain.BookBorrowingRequestDetail", null)
+                        .WithMany()
+                        .HasForeignKey("BookBorrowingRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MidAssignment.Domain.Book", null)
+                        .WithMany()
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("BookCategory", b =>
+                {
+                    b.HasOne("MidAssignment.Domain.Book", null)
+                        .WithMany()
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MidAssignment.Domain.Category", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -274,6 +416,49 @@ namespace MidAssignment.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MidAssignment.Domain.BookBorrowingRequest", b =>
+                {
+                    b.HasOne("MidAssignment.Domain.ApplicationUser", "Approver")
+                        .WithMany("ApprovedRequests")
+                        .HasForeignKey("ApproverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MidAssignment.Domain.ApplicationUser", "Requestor")
+                        .WithMany("MadeRequests")
+                        .HasForeignKey("RequestorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Approver");
+
+                    b.Navigation("Requestor");
+                });
+
+            modelBuilder.Entity("MidAssignment.Domain.BookBorrowingRequestDetail", b =>
+                {
+                    b.HasOne("MidAssignment.Domain.BookBorrowingRequest", "BookBorrowingRequest")
+                        .WithOne("BookBorrowingRequestDetail")
+                        .HasForeignKey("MidAssignment.Domain.BookBorrowingRequestDetail", "BookBorrowingRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BookBorrowingRequest");
+                });
+
+            modelBuilder.Entity("MidAssignment.Domain.ApplicationUser", b =>
+                {
+                    b.Navigation("ApprovedRequests");
+
+                    b.Navigation("MadeRequests");
+                });
+
+            modelBuilder.Entity("MidAssignment.Domain.BookBorrowingRequest", b =>
+                {
+                    b.Navigation("BookBorrowingRequestDetail")
                         .IsRequired();
                 });
 #pragma warning restore 612, 618
