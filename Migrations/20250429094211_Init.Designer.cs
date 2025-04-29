@@ -12,7 +12,7 @@ using MidAssignment.Infrastructure;
 namespace MidAssignment.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250425115248_Init")]
+    [Migration("20250429094211_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -266,6 +266,15 @@ namespace MidAssignment.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("EditionNumber")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -282,7 +291,6 @@ namespace MidAssignment.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ApproverId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("RequestDate")
@@ -312,10 +320,10 @@ namespace MidAssignment.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("ReturnDate")
+                    b.Property<DateTime?>("ReturnDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("UpdateAt")
+                    b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("BookBorrowingRequestId");
@@ -424,8 +432,7 @@ namespace MidAssignment.Migrations
                     b.HasOne("MidAssignment.Domain.ApplicationUser", "Approver")
                         .WithMany("ApprovedRequests")
                         .HasForeignKey("ApproverId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("MidAssignment.Domain.ApplicationUser", "Requestor")
                         .WithMany("MadeRequests")

@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MidAssignment.DTOs;
-using MidAssignment.Services;
-using System.Net;
+using MidAssignment.Services.Interfaces;
 
 namespace MidAssignment.Controllers
 {
@@ -17,7 +15,7 @@ namespace MidAssignment.Controllers
         [Route("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
-            ApplicationResponse<object> result = await _authServices.RegisterAsync(model);
+            ApplicationResponse result = await _authServices.RegisterAsync(model);
             if (!result.Success)
                 return BadRequest(result);
 
@@ -27,7 +25,7 @@ namespace MidAssignment.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model, [FromHeader(Name = "X-Public-Key")] string publicKey = "")
         {
-            ApplicationResponse<object> result = await _authServices.LoginAsync(model.Email, model.Password);
+            ApplicationResponse result = await _authServices.LoginAsync(model.Email, model.Password);
             if (!result.Success)
                 return BadRequest(result);
             //if (string.IsNullOrWhiteSpace(publicKey))
@@ -37,30 +35,18 @@ namespace MidAssignment.Controllers
             var userResponse = (RegisterUserResponseDto)result.Content!;
             string userRole = userResponse.Role;
             string accessToken = _jWTServices.GenerateTokenWithPublicKey(model.Email, publicKey, false, userRole);
-            Response.Cookies.Append("access_token", accessToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None, 
-                Expires = DateTimeOffset.UtcNow.AddMinutes(30)
-            });
+            Response.Cookies.Append("access_token", accessToken, _jWTServices.AccessTokenCookieOption());
             if (model.IsRememberLogin == true)
             {
                 string refreshToken = _jWTServices.GenerateTokenWithPublicKey(model.Email, publicKey, true, userRole);
-                Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.None,
-                    Expires = DateTimeOffset.UtcNow.AddMonths(1)
-                });
+                Response.Cookies.Append("refresh_token", refreshToken, _jWTServices.RefreshTokenCookieOption());
             }
             return Ok(result);
         }
 
         [HttpPost]
         [Route("logout")]
-        public async Task<IActionResult> Logout()
+        public IActionResult Logout()
         {
             if (Request.Cookies.ContainsKey("refresh_token"))
             {
@@ -69,22 +55,22 @@ namespace MidAssignment.Controllers
 
             Response.Cookies.Delete("access_token");
 
-            return Ok(new ApplicationResponse<object>(true, StatusCodes.Status200OK, null, "Logged out successfully."));
+            return Ok(new SuccessApplicationResponse<string>(StatusCodes.Status200OK, "Logged out successfully."));
         }
 
 
-        [HttpPost]
-        [Route("forgot-password")]
-        public IActionResult ForgotPassword()
-        {
-            return Ok();
-        }
+        //[HttpPost]
+        //[Route("forgot-password")]
+        //public IActionResult ForgotPassword()
+        //{
+        //    return Ok();
+        //}
 
-        [HttpPost]
-        [Route("reset-password")]
-        public IActionResult ResetPassword()
-        {
-            return Ok();
-        }
+        //[HttpPost]
+        //[Route("reset-password")]
+        //public IActionResult ResetPassword()
+        //{
+        //    return Ok();
+        //}
     }
 }

@@ -9,8 +9,8 @@
 
         public Status Status { get; set; }
 
-        public required string ApproverId { get; set; }
-        public required ApplicationUser Approver { get; set; }
+        public string? ApproverId { get; set; }
+        public ApplicationUser? Approver { get; set; }
 
         public required BookBorrowingRequestDetail BookBorrowingRequestDetail { get; set; }
     }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MidAssignment.DTOs;
 
 namespace MidAssignment.Controllers
 {
@@ -12,6 +13,7 @@ namespace MidAssignment.Controllers
         public ActionResult GetAll()
         {
             return Ok(new { test = "Ok" });
+            //return Ok(new ApplicationResponse<List<string>>(false, 200, null, [""]));
         }
     }
 }

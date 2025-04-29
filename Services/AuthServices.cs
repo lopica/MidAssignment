@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using MidAssignment.Domain;
 using MidAssignment.DTOs;
+using MidAssignment.Services.Interfaces;
 using System.Data;
-using System.Net.WebSockets;
 
 namespace MidAssignment.Services
 {
@@ -10,7 +10,7 @@ namespace MidAssignment.Services
     {
         private readonly UserManager<ApplicationUser> _userManager = userManager;
 
-        public async Task<ApplicationResponse<object>> RegisterAsync(RegisterDto registerDto, string role = "User")
+        public async Task<ApplicationResponse> RegisterAsync(RegisterDto registerDto, string role = "User")
         {
             var user = new ApplicationUser
             {
@@ -20,10 +20,10 @@ namespace MidAssignment.Services
             IdentityResult result = await _userManager.CreateAsync(user, registerDto.Password);
             if (!result.Succeeded)
             {
-                return new ApplicationResponse<object>(false, StatusCodes.Status400BadRequest, result.Errors.Select(e => e.Description).ToList());
+                return new ErrorApplicationResponse(StatusCodes.Status400BadRequest, result.Errors.Select(e => e.Description).ToList());
             }
             await _userManager.AddToRoleAsync(user, role);
-            return new ApplicationResponse<object>(true, StatusCodes.Status201Created, null, new
+            return new SuccessApplicationResponse<object>(StatusCodes.Status201Created, content: new
             {
                 user.Email,
                 role,
@@ -31,23 +31,23 @@ namespace MidAssignment.Services
             });
         }
 
-        public async Task<ApplicationResponse<object>> LoginAsync(string email, string password)
+        public async Task<ApplicationResponse> LoginAsync(string email, string password)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                return new ApplicationResponse<object>(false, StatusCodes.Status400BadRequest, null, "email is invalid");
+                return new ErrorApplicationResponse(StatusCodes.Status400BadRequest, ["email is invalid"]);
             }
 
             if (!await _userManager.CheckPasswordAsync(user, password))
             {
-                return new ApplicationResponse<object>(false, StatusCodes.Status400BadRequest, null, "password is invalid");
+                return new ErrorApplicationResponse(StatusCodes.Status400BadRequest, ["password is invalid"]);
             }
 
             var roles = await _userManager.GetRolesAsync(user);
             var x = roles.FirstOrDefault();
-            return new ApplicationResponse<object>(true, StatusCodes.Status200OK, null, 
-                new RegisterUserResponseDto(user.Email,roles.FirstOrDefault()));
+            return new SuccessApplicationResponse<object>(StatusCodes.Status200OK, 
+                content: new RegisterUserResponseDto(user.Email!,roles.FirstOrDefault()!));
         }
 
     }
