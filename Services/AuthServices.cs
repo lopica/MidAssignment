@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using MidAssignment.Domain;
 using MidAssignment.DTOs;
+using MidAssignment.DTOs.Auth;
 using MidAssignment.Services.Interfaces;
 using System.Data;
 

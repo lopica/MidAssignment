@@ -2,7 +2,6 @@
 using MidAssignment.Domain;
 using MidAssignment.DTOs;
 using MidAssignment.DTOs.Book;
-using MidAssignment.DTOs.Category;
 using MidAssignment.Repositories;
 using MidAssignment.Services.Interfaces;
 using System.Linq.Expressions;
@@ -31,19 +30,19 @@ namespace MidAssignment.Services
             };
 
             // Check if categories are provided and map them to the book
-            if (newBookDto.CategoryIds != null && newBookDto.CategoryIds.Count != 0)
-            {
-                foreach (var categoryId in newBookDto.CategoryIds)
-                {
-                    Category? existCategory = await _cateRepo.GetByIdAsync(categoryId);
-                    if (existCategory == null)
-                    {
-                        return new ErrorApplicationResponse(StatusCodes.Status404NotFound, [$"Category with ID {categoryId} does not exist."]);
-                    }
-                    newBook.Categories.Add(existCategory);
-                }
-            }
+            List<Category> matchCategories = await _cateRepo
+                .GetQueryable(c => newBookDto.CategoryIds.Contains(c.Id))
+                .ToListAsync();
 
+            List<Guid> existCategoryIds = matchCategories.Select(c => c.Id).ToList();
+
+            if (existCategoryIds.Count != newBook.Categories.Count)
+            {
+                List<Guid> missingCategoryIds = newBookDto.CategoryIds.Where(id => !existCategoryIds.Contains(id)).ToList();
+                return new ErrorApplicationResponse(StatusCodes.Status404NotFound,
+                    [$"The following category ID{(missingCategoryIds.Count == 1 ? "" : "s")} do not exist: {string.Join(", ", missingCategoryIds)}"]);
+            }
+            newBook.Categories = matchCategories;
             // Add the book to the repository
             await _bookRepo.AddAsync(newBook);
 
@@ -51,7 +50,7 @@ namespace MidAssignment.Services
             var success = await _bookRepo.SaveChangesAsync();
 
             var bookResponse = new BookDto(newBook.Id, newBook.Title, newBook.Author, newBook.EditionNumber, newBook.Quantity, newBook.IsAvailable,
-                newBook.Categories.Select(b => b.Id).ToList());
+                existCategoryIds);
 
             return new SuccessApplicationResponse<BookDto>(StatusCodes.Status201Created, bookResponse);
         }
@@ -98,7 +97,7 @@ namespace MidAssignment.Services
             if (limit <= 0) limit = 5;
 
             // Build predicate for filtering by title
-            Expression<Func<Book, bool>> predicate = c => string.IsNullOrEmpty(title) || c.Title.Contains(title);
+            Expression<Func<Book, bool>> predicate = b => string.IsNullOrEmpty(title) || b.Title.Contains(title);
 
             // Fetch books with Category IDs eagerly loaded
             var allBooks = _bookRepo.GetQueryable(predicate)
@@ -146,19 +145,18 @@ namespace MidAssignment.Services
                 return new ErrorApplicationResponse(StatusCodes.Status404NotFound, [$"Book with ID {updateId} not found"]);
             }
             existBook.Categories?.Clear();
-            if (updateBook.CategoryIds != null && updateBook.CategoryIds.Count != 0)
-            {
-                foreach (var categoryId in updateBook.CategoryIds)
-                {
-                    Category? category = await _cateRepo.GetByIdAsync(categoryId);
-                    if (category == null)
-                    {
-                        return new ErrorApplicationResponse(StatusCodes.Status404NotFound, [$"Category with ID {categoryId} does not exist."]);
-                    }
-                    existBook.Categories?.Add(category);
-                }
-            }
+            List<Category> matchCategories = await _cateRepo
+                .GetQueryable(c => updateBook.CategoryIds.Contains(c.Id))
+                .ToListAsync();
 
+            List<Guid> existCategoryIds = matchCategories.Select(c => c.Id).ToList();
+
+            if (existCategoryIds.Count != updateBook.CategoryIds.Count)
+            {
+                List<Guid> missingCategoryIds = updateBook.CategoryIds.Where(id => !existCategoryIds.Contains(id)).ToList();
+                return new ErrorApplicationResponse(StatusCodes.Status404NotFound,
+                    [$"The following category ID{(missingCategoryIds.Count == 1 ? "" : "s")} do not exist: {string.Join(", ", missingCategoryIds)}"]);
+            }
 
             // Update the properties
             existBook.Title = updateBook.Title;
@@ -172,7 +170,7 @@ namespace MidAssignment.Services
 
             if (result)
             {
-                BookDto updatedBook = new(existBook.Id, existBook.Title, existBook.Author, existBook.EditionNumber, existBook.Quantity, existBook.IsAvailable, existBook.Categories!.Select(c => c.Id).ToList());
+                BookDto updatedBook = new(existBook.Id, existBook.Title, existBook.Author, existBook.EditionNumber, existBook.Quantity, existBook.IsAvailable, existCategoryIds);
                 return new SuccessApplicationResponse<BookDto>(StatusCodes.Status200OK, updatedBook);
             }
             else

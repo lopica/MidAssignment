@@ -12,7 +12,7 @@ using MidAssignment.Infrastructure;
 namespace MidAssignment.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250429094211_Init")]
+    [Migration("20250501085854_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -297,7 +297,6 @@ namespace MidAssignment.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("RequestorId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Status")
@@ -323,7 +322,7 @@ namespace MidAssignment.Migrations
                     b.Property<DateTime?>("ReturnDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("UpdateAt")
+                    b.Property<DateTime>("UpdateAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("BookBorrowingRequestId");
@@ -437,8 +436,7 @@ namespace MidAssignment.Migrations
                     b.HasOne("MidAssignment.Domain.ApplicationUser", "Requestor")
                         .WithMany("MadeRequests")
                         .HasForeignKey("RequestorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Approver");
 
@@ -465,8 +463,7 @@ namespace MidAssignment.Migrations
 
             modelBuilder.Entity("MidAssignment.Domain.BookBorrowingRequest", b =>
                 {
-                    b.Navigation("BookBorrowingRequestDetail")
-                        .IsRequired();
+                    b.Navigation("BookBorrowingRequestDetail");
                 });
 #pragma warning restore 612, 618
         }

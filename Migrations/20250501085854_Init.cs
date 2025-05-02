@@ -190,7 +190,7 @@ namespace MidAssignment.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RequestorId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RequestorId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     RequestDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     ApproverId = table.Column<string>(type: "nvarchar(450)", nullable: true)
@@ -243,7 +243,7 @@ namespace MidAssignment.Migrations
                     BookBorrowingRequestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ReturnDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {

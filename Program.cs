@@ -54,6 +54,8 @@ namespace MidAssignment
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddScoped<ICategoryServices, CategoryServices>();
             builder.Services.AddScoped<IBookServices, BookServices>();
+            builder.Services.AddScoped<IBorrowingRequestServices, BorrowingRequestServices>();
+            builder.Services.AddScoped<IApplicationUserServices, ApplicationUserServices>();
             builder.Services.AddSingleton<IJWTServices, JWTServices>();
             builder.Services.AddAuthentication(options =>
             {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MidAssignment.DTOs;
+using MidAssignment.DTOs.Auth;
 using MidAssignment.Services.Interfaces;
 
 namespace MidAssignment.Controllers

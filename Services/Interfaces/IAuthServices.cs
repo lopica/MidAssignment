@@ -1,4 +1,5 @@
 ﻿using MidAssignment.DTOs;
+using MidAssignment.DTOs.Auth;
 
 namespace MidAssignment.Services.Interfaces
 {

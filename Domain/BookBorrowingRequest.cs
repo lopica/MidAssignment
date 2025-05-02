@@ -3,15 +3,33 @@
     public class BookBorrowingRequest
     {
         public Guid Id { get; set; }
-        public required string RequestorId { get; set; }
-        public required ApplicationUser Requestor { get; set; }
-        public required DateTime RequestDate { get; set; }
+        public string? RequestorId { get; set; }
+        private ApplicationUser _requestor = null!;
+        public required ApplicationUser Requestor
+        {
+            get => _requestor;
+            set
+            {
+                _requestor = value;
+                RequestorId = value.Id;
+            }
+        }
+        public DateTime RequestDate { get; set; } = DateTime.Now;
 
         public Status Status { get; set; }
 
         public string? ApproverId { get; set; }
-        public ApplicationUser? Approver { get; set; }
+        private ApplicationUser? _approver;
+        public ApplicationUser? Approver
+        {
+            get => _approver;
+            set
+            {
+                _approver = value;
+                ApproverId = value?.Id;
+            }
+        }
 
-        public required BookBorrowingRequestDetail BookBorrowingRequestDetail { get; set; }
+        public BookBorrowingRequestDetail? BookBorrowingRequestDetail { get; set; }
     }
 }
